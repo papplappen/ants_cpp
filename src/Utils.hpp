@@ -11,19 +11,20 @@
 #define PRINT_DEBUG true
 
 #if PRINT_DEBUG
-#define DBG(s) \
-    if (PRINT_DEBUG) std::cerr << __FILENAME__ << "@" << __LINE__ << " : " << s << std::endl
+#define DBG(s)       \
+    if (PRINT_DEBUG) \
+    std::cerr << __FILENAME__ << "@" << __LINE__ << " : " << s << std::endl
 #else
 #define DBG(s)
 #endif
 
 template <typename T>
-size_t vectorsizeof(const typename std::vector<T>& vec) {
+size_t vectorsizeof(const typename std::vector<T> &vec) {
     return sizeof(T) * vec.size();
 }
 
 template <typename T>
-void sort_to_index_array(std::vector<T>& data, std::vector<unsigned int>& index) {
+void sort_to_index_array(std::vector<T> &data, std::vector<unsigned int> &index) {
     const unsigned int SIZE = data.size() <= index.size() ? data.size() : index.size();
     for (unsigned int i = 0; i < SIZE; i++) {
         if (index[i] != i) {
@@ -72,7 +73,7 @@ void pretty_print(glm::mat3 m);
 #define TIMEIT_END                                                                                                                       \
     if (TIMEIT_TIMEIT) {                                                                                                                 \
         long total = std::chrono::duration_cast<TIMEIT_DURATION_TYPE>(std::chrono::high_resolution_clock::now() - TIMEIT_begin).count(); \
-        for (const TIMEIT_sample& t : TIMEIT_times) {                                                                                    \
+        for (const TIMEIT_sample &t : TIMEIT_times) {                                                                                    \
             double ratio = double(t.t) / total;                                                                                          \
             std::cout << t.label << ": " << t.t << " (" << int(ratio * 100.0) << "%)" << std::endl;                                      \
         }                                                                                                                                \
