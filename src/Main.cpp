@@ -15,38 +15,34 @@
 #include "Utils.hpp"
 #include "GLUtils.hpp"
 #include "ShaderProgram.hpp"
+#include "Ant.hpp"
+#include "Food.hpp"
+#include "Home.hpp"
 
 GLFWwindow *window;
 glm::ivec2 viewport_size;
 
 const float ANT_COMPSHADER_INT_SCALE = 1000.0;
 
-struct Ant {
-    glm::vec2 pos;
-    glm::vec2 dir;
+std::forward_list<Ant> ants;
+std::vector<AntGPUData> antsGpuData;
+std::forward_list<Home> homes;
+std::forward_list<Food> foods;
 
-    void update() {
-        dir += 0.5 * glm::circularRand(1.0f);
-        dir = glm::normalize(dir);
-        pos += 0.003 * dir;
-        if (pos.x > 1) {
-            pos.x = 1;
-            dir.x = -dir.x;
-        } else if (pos.x < -1) {
-            pos.x = -1;
-            dir.x = -dir.x;
-        }
-        if (pos.y > 1) {
-            pos.y = 1;
-            dir.y = -dir.y;
-        } else if (pos.y < -1) {
-            pos.y = -1;
-            dir.y = -dir.y;
-        }
+void updateAll() {
+    for (Ant &a : ants) {
+        a.update();
     }
-};
+    ants.remove_if(Ant::dead);
 
-std::vector<Ant> ants;
+    foods.remove_if(Food::empty);
+
+    for (Home h : homes) {
+        h.update();
+    }
+}
+void showAll() {
+}
 
 int main() {
     std::cout << "BADAMS!" << std::endl;
@@ -71,14 +67,21 @@ int main() {
     glfwSetCursorPosCallback(window, cursor_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-    for (int i = 0; i < 10000; i++) {
-        ants.push_back(Ant{glm::diskRand(1.0f), glm::circularRand(1.0f)});
+    for (int i = 0; i < 100; i++) {
+        ants.push_front(Ant(glm::circularRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
     }
+    ants.push_front(Ant(glm::vec2(100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    ants.push_front(Ant(glm::vec2(100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    ants.push_front(Ant(glm::vec2(-100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    ants.push_front(Ant(glm::vec2(-100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    // for (AntGPUData a : antsGpuData) {
+    //     std::cout << a.pos.x << " | " << a.pos.y << std::endl;
+    // }
 
     GLuint vbo_ants;
     glGenBuffers(1, &vbo_ants);
     glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
-    glBufferData(GL_ARRAY_BUFFER, vectorsizeof(ants), ants.data(), GL_DYNAMIC_DRAW);
+    glBufferData(GL_ARRAY_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_DRAW);
 
     GLuint tex_ant;
     glGenTextures(1, &tex_ant);
@@ -116,14 +119,15 @@ int main() {
     glBindTexture(GL_TEXTURE_2D, 0);
 
     ShaderProgram shader_ant("shaders/ant");
-    shader_ant.point_attribute("pos", 2, GL_FLOAT, GL_FALSE, sizeof(Ant), (void *)offsetof(Ant, pos));
-    shader_ant.point_attribute("dir", 2, GL_FLOAT, GL_FALSE, sizeof(Ant), (void *)offsetof(Ant, dir));
+    shader_ant.point_attribute("pos", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, pos));
+    shader_ant.point_attribute("dir", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, dir));
+    shader_ant.set_uniformf("trans", glm::mat2(1.0f / (0.5f * viewport_size.x), 0, 0, 1.0f / (0.5f * viewport_size.y)));
 
     GLuint ssbo_newdirs;
     glGenBuffers(1, &ssbo_newdirs);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
     {
-        glBufferData(GL_SHADER_STORAGE_BUFFER, ants.size() * sizeof(glm::ivec2), NULL, GL_DYNAMIC_READ);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, antsGpuData.size() * sizeof(glm::ivec2), NULL, GL_DYNAMIC_READ);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 3, ssbo_newdirs);
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
@@ -132,17 +136,17 @@ int main() {
     glGenBuffers(1, &ssbo_ants);
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_ants);
     {
-        glBufferData(GL_SHADER_STORAGE_BUFFER, vectorsizeof(ants), ants.data(), GL_DYNAMIC_READ);
+        glBufferData(GL_SHADER_STORAGE_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_READ);
         glBindBufferBase(GL_SHADER_STORAGE_BUFFER, 4, ssbo_ants);
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     GLuint compshader_test = glCreateProgram();
     {
-        GLuint compshader_test_obj = compile_shader("shaders/test.comp", GL_COMPUTE_SHADER);
-        glAttachShader(compshader_test, compshader_test_obj);
-        glLinkProgram(compshader_test);
-        check_shader_program_link_status(compshader_test, "Compshader");
+        // GLuint compshader_test_obj = compile_shader("shaders/test.comp", GL_COMPUTE_SHADER);
+        // glAttachShader(compshader_test, compshader_test_obj);
+        // glLinkProgram(compshader_test);
+        // check_shader_program_link_status(compshader_test, "Compshader");
     }
 
     double start_time = glfwGetTime();
@@ -158,43 +162,43 @@ int main() {
 
         /* --- UPDATE --- */
         {
-            for (Ant &a : ants) {
-                a.update();
-            }
+            // for (Ant &a : ants) {
+            //     a.update();
+            // }
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
-            glBufferData(GL_ARRAY_BUFFER, vectorsizeof(ants), ants.data(), GL_DYNAMIC_DRAW);
+            glBufferData(GL_ARRAY_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
 
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_ants);
-            glBufferData(GL_SHADER_STORAGE_BUFFER, vectorsizeof(ants), ants.data(), GL_DYNAMIC_READ);
+            glBufferData(GL_SHADER_STORAGE_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_READ);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-            glUseProgram(compshader_test);
-            {
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
-                {
-                    glm::ivec2 zero = glm::ivec2(0, 0);
-                    glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RG32I, GL_RG_INTEGER, GL_INT, &zero);
-                }
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            // glUseProgram(compshader_test);
+            // {
+            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
+            //     {
+            //         glm::ivec2 zero = glm::ivec2(0, 0);
+            //         glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RG32I, GL_RG_INTEGER, GL_INT, &zero);
+            //     }
+            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-                glDispatchCompute(ants.size(), 1, 1);
+            //     glDispatchCompute(antsGpuData.size(), 1, 1);
 
-                glMemoryBarrier(GL_ALL_BARRIER_BITS);
+            //     glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
-                glm::ivec2 *newdirs = (glm::ivec2 *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-                {
-                    for (int i = 0; i < ants.size(); i++) {
-                        glm::vec2 newdir = glm::vec2(newdirs[i]) / ANT_COMPSHADER_INT_SCALE;
-                        // std::cout << glm::to_string(newdir) << std::endl;
-                        ants[i].dir += 0.4 * newdir;
-                    }
-                }
-                glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            }
-            glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
+            //     glm::ivec2 *newdirs = (glm::ivec2 *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+            //     {
+            //         for (int i = 0; i < antsGpuData.size(); i++) {
+            //             glm::vec2 newdir = glm::vec2(newdirs[i]) / ANT_COMPSHADER_INT_SCALE;
+            //             // std::cout << glm::to_string(newdir) << std::endl;
+            //             antsGpuData[i].dir += 0.4 * newdir;
+            //         }
+            //     }
+            //     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            // }
+            // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
         }
 
         /* --- RENDER --- */
@@ -203,7 +207,7 @@ int main() {
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
             glBindTexture(GL_TEXTURE_2D, tex_ant);
             {
-                glDrawArrays(GL_POINTS, 0, ants.size());
+                glDrawArrays(GL_POINTS, 0, antsGpuData.size());
             }
             glBindTexture(GL_TEXTURE_2D, 0);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
