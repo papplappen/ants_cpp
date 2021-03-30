@@ -7,14 +7,18 @@
 #include <GLFW/glfw3.h>
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/ext.hpp>
+
 #define STB_IMAGE_IMPLEMENTATION
 #include <stb_image.h>
+#undef STB_IMAGE_IMPLEMENTATION
+
 #define GLT_IMPLEMENTATION
 #include <gltext.h>
 
 #include "Utils.hpp"
 #include "GLUtils.hpp"
 #include "ShaderProgram.hpp"
+#include "Texture.hpp"
 #include "Ant.hpp"
 #include "Food.hpp"
 #include "Home.hpp"
@@ -47,7 +51,7 @@ void showAll() {
 int main() {
     std::cout << "BADAMS!" << std::endl;
     //GL SETUP
-    window = init_glfw("ants!");
+    window = init_glfw("蟻");
     init_glew();
 
     gltInit();
@@ -67,13 +71,13 @@ int main() {
     glfwSetCursorPosCallback(window, cursor_callback);
     glfwSetMouseButtonCallback(window, mouse_button_callback);
 
-    for (int i = 0; i < 100; i++) {
-        ants.push_front(Ant(glm::circularRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    for (int i = 0; i < 1000; i++) {
+        ants.push_front(Ant(glm::diskRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
     }
-    ants.push_front(Ant(glm::vec2(100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    ants.push_front(Ant(glm::vec2(100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    ants.push_front(Ant(glm::vec2(-100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    ants.push_front(Ant(glm::vec2(-100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    // ants.push_front(Ant(glm::vec2(100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    // ants.push_front(Ant(glm::vec2(100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    // ants.push_front(Ant(glm::vec2(-100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+    // ants.push_front(Ant(glm::vec2(-100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
     // for (AntGPUData a : antsGpuData) {
     //     std::cout << a.pos.x << " | " << a.pos.y << std::endl;
     // }
@@ -83,42 +87,31 @@ int main() {
     glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
     glBufferData(GL_ARRAY_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_DRAW);
 
-    GLuint tex_ant;
-    glGenTextures(1, &tex_ant);
-    glBindTexture(GL_TEXTURE_2D, tex_ant);
-    {
-        int width, height, channels;
-        unsigned char *img = stbi_load("res/ant2.png", &width, &height, &channels, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR_MIPMAP_NEAREST);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        glGenerateMipmap(GL_TEXTURE_2D);
-        stbi_image_free(img);
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    Texture tex_ants("res/ant2.png", true, true, true);
 
-    GLuint tex_simplex;
-    glGenTextures(1, &tex_simplex);
-    glBindTexture(GL_TEXTURE_2D, tex_simplex);
-    {
-        int width, height, channels;
-        unsigned char *img = stbi_load("res/noise.png", &width, &height, &channels, 0);
-        glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-        // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-        glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-        // glGenerateMipmap(GL_TEXTURE_2D);
+    Texture tex_simplex("res/noise2.png", false, true, false);
+    tex_simplex.bindImageTexture(0, true, false);
 
-        glBindImageTexture(0, tex_simplex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
+    // GLuint tex_simplex;
+    // glGenTextures(1, &tex_simplex);
+    // glBindTexture(GL_TEXTURE_2D, tex_simplex);
+    // {
+    //     int width, height, channels;
+    //     unsigned char *img = stbi_load("res/noise.png", &width, &height, &channels, 0);
+    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
+    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
+    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
+    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+    //     glGenerateMipmap(GL_TEXTURE_2D);
 
-        stbi_image_free(img);
-    }
-    glBindTexture(GL_TEXTURE_2D, 0);
+    //     glBindImageTexture(0, tex_simplex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
 
-    ShaderProgram shader_ant("shaders/ant");
+    //     stbi_image_free(img);
+    // }
+    // glBindTexture(GL_TEXTURE_2D, 0);
+
+    ShaderProgram shader_ant("shaders/ant.vert", "shaders/ant.frag");
     shader_ant.point_attribute("pos", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, pos));
     shader_ant.point_attribute("dir", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, dir));
     shader_ant.set_uniformf("trans", glm::mat2(1.0f / (0.5f * viewport_size.x), 0, 0, 1.0f / (0.5f * viewport_size.y)));
@@ -141,13 +134,14 @@ int main() {
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    GLuint compshader_test = glCreateProgram();
-    {
-        // GLuint compshader_test_obj = compile_shader("shaders/test.comp", GL_COMPUTE_SHADER);
-        // glAttachShader(compshader_test, compshader_test_obj);
-        // glLinkProgram(compshader_test);
-        // check_shader_program_link_status(compshader_test, "Compshader");
-    }
+    // GLuint compshader_test = glCreateProgram();
+    // {
+    //     GLuint compshader_test_obj = compile_shader("shaders/test.comp", GL_COMPUTE_SHADER);
+    //     glAttachShader(compshader_test, compshader_test_obj);
+    //     glLinkProgram(compshader_test);
+    //     check_shader_program_link_status(compshader_test, "Compshader");
+    // }
+    ShaderProgram compshader_test("shaders/test.comp");
 
     double start_time = glfwGetTime();
     double last_frame_time = start_time;
@@ -162,9 +156,9 @@ int main() {
 
         /* --- UPDATE --- */
         {
-            // for (Ant &a : ants) {
-            //     a.update();
-            // }
+            for (Ant &a : ants) {
+                a.update();
+            }
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
             glBufferData(GL_ARRAY_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_DRAW);
             glBindBuffer(GL_ARRAY_BUFFER, 0);
@@ -173,43 +167,41 @@ int main() {
             glBufferData(GL_SHADER_STORAGE_BUFFER, vectorsizeof(antsGpuData), antsGpuData.data(), GL_DYNAMIC_READ);
             glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-            // glUseProgram(compshader_test);
-            // {
-            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
-            //     {
-            //         glm::ivec2 zero = glm::ivec2(0, 0);
-            //         glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RG32I, GL_RG_INTEGER, GL_INT, &zero);
-            //     }
-            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            {
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
+                {
+                    glm::ivec2 zero = glm::ivec2(0, 0);
+                    glClearBufferData(GL_SHADER_STORAGE_BUFFER, GL_RG32I, GL_RG_INTEGER, GL_INT, &zero);
+                }
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-            //     glDispatchCompute(antsGpuData.size(), 1, 1);
+                compshader_test.dispatch(antsGpuData.size(), 1, 1);
 
-            //     glMemoryBarrier(GL_ALL_BARRIER_BITS);
+                glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
-            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
-            //     glm::ivec2 *newdirs = (glm::ivec2 *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
-            //     {
-            //         for (int i = 0; i < antsGpuData.size(); i++) {
-            //             glm::vec2 newdir = glm::vec2(newdirs[i]) / ANT_COMPSHADER_INT_SCALE;
-            //             // std::cout << glm::to_string(newdir) << std::endl;
-            //             antsGpuData[i].dir += 0.4 * newdir;
-            //         }
-            //     }
-            //     glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
-            //     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
-            // }
-            // glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, ssbo_newdirs);
+                glm::ivec2 *newdirs = (glm::ivec2 *)glMapBuffer(GL_SHADER_STORAGE_BUFFER, GL_READ_ONLY);
+                {
+                    for (int i = 0; i < antsGpuData.size(); i++) {
+                        glm::vec2 newdir = glm::vec2(newdirs[i]) / ANT_COMPSHADER_INT_SCALE;
+                        // std::cout << glm::to_string(newdir) << std::endl;
+                        antsGpuData[i].dir += 0.4 * newdir;
+                    }
+                }
+                glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
+                glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
+            }
         }
 
         /* --- RENDER --- */
         {
             shader_ant.use();
             glBindBuffer(GL_ARRAY_BUFFER, vbo_ants);
-            glBindTexture(GL_TEXTURE_2D, tex_ant);
+            tex_ants.bind();
             {
                 glDrawArrays(GL_POINTS, 0, antsGpuData.size());
             }
-            glBindTexture(GL_TEXTURE_2D, 0);
+            tex_ants.unbind();
             glBindBuffer(GL_ARRAY_BUFFER, 0);
         }
 

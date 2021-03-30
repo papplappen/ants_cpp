@@ -118,7 +118,7 @@ GLuint compile_shader(std::string filename, GLenum shader_type) {
     GLuint shader = glCreateShader(shader_type);
     glShaderSource(shader, 1, &source_cstr, NULL);
     glCompileShader(shader);
-    if (!check_shader_compile_status(shader, filename)) {
+    if (!check_shader_compile_status(shader, "\"" + filename + "\"")) {
         exit(-1);
     }
     return shader;
@@ -132,7 +132,7 @@ GLuint compiler_render_program(std::string vertex_shader_filename, std::string f
     glAttachShader(program, fragment_shader);
     glBindFragDataLocation(program, 0, out_color_name.c_str());
     glLinkProgram(program);
-    if (!check_shader_program_link_status(program, "\"" + vertex_shader_filename + "\"/\"" + fragment_shader_filename + "\"")) {
+    if (!check_shader_program_link_status(program, "\"" + vertex_shader_filename + "\"+\"" + fragment_shader_filename + "\"")) {
         exit(-1);
     }
     return program;

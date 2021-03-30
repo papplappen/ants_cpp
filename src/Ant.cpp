@@ -9,6 +9,9 @@ Ant::Ant(glm::vec2 pos_, glm::vec2 dir_, glm::vec2 screenSize_, std::forward_lis
 }
 
 void Ant::update() {
+    pos = gpuData[gpuDataIndex].pos;
+    dir = gpuData[gpuDataIndex].dir;
+
     glm::vec2 tempDir = glm::vec2(0, 0);
     if (!carries_food) {
         for (Food f : foods) {
@@ -43,7 +46,7 @@ void Ant::update() {
 
     {
         double r = std::max(RANDOM_ROTATE_MIN, (1 - life) * RANDOM_ROTATE_MAX);
-        glm::rotate(dir, float(random(-r, r)));
+        glm::rotate(dir, float(glm::linearRand(-r, r)));
     }
     pos += dir * SPEED;
     wallCollision(screenSize);
@@ -69,20 +72,20 @@ void Ant::update() {
 void Ant::show() {}
 
 void Ant::wallCollision(glm::vec2 screenSize) {
-    if (pos.x > screenSize.x) {
-        pos.x = screenSize.x;
+    if (pos.x > 0.5*screenSize.x) {
+        pos.x = 0.5*screenSize.x;
         dir.x = -dir.x;
     }
-    if (pos.x < 0) {
-        pos.x = 0;
+    if (pos.x < -0.5*screenSize.x) {
+        pos.x = -0.5*screenSize.x;
         dir.x = -dir.x;
     }
-    if (pos.y > screenSize.y) {
-        pos.y = screenSize.y;
+    if (pos.y > 0.5*screenSize.y) {
+        pos.y = 0.5*screenSize.y;
         dir.y = -dir.y;
     }
-    if (pos.y < 0) {
-        pos.y = 0;
+    if (pos.y < -0.5*screenSize.y) {
+        pos.y = -0.5*screenSize.y;
         dir.y = -dir.y;
     }
 }

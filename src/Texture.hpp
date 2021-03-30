@@ -8,12 +8,12 @@
 
 class Texture {
    public:
-    Texture(std::string filename, bool mipmap, bool clamp);
-    Texture(std::string filename) : Texture(filename, true, false){};
+    Texture(const std::string& texture_file, bool mipmap, bool filter_linear, bool wrap_clamp);
+    Texture(const std::string& texture_file) : Texture(texture_file, true, true, false){};
     GLuint gl_name;
-
     void bind();
     void unbind();
+    void bindImageTexture(GLuint unit, bool read, bool write);
 
    private:
 };

@@ -84,6 +84,6 @@ void pretty_print(glm::mat3 m);
 
 double radians(double degrees);
 
-double random();
-double random(double max);
-double random(double min, double max);
+// double random();
+// double random(double max);
+// double random(double min, double max);

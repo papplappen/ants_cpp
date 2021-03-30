@@ -21,9 +21,10 @@ restrict layout(std430, binding = 4) buffer _ssbo_ants {
 void main() {
     uint index = gl_WorkGroupID.x;
     ivec2 imgSize = imageSize(signal_map);
-    ivec2 imgCoord = ivec2(0.5 * (ants[index].pos + 1.0) * imgSize);
+    ivec2 imgCoord = ivec2(ants[index].pos);
+    imgCoord = ivec2(imgCoord.x % imgSize.x, imgCoord.y % imgSize.y);
     // float angle = 0.3 + imageLoad(signal_map, imgCoord).r;
-    // vec2 newdir = normalize(ants[index].pos);
+    // vec2 newdir = normalize(vec2(ants[index].pos.y, -ants[index].pos.x));
     float px00 = imageLoad(signal_map, imgCoord).r;
     float px10 = imageLoad(signal_map, imgCoord + ivec2(8, 0)).r;
     float px01 = imageLoad(signal_map, imgCoord + ivec2(0, 8)).r;
