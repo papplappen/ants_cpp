@@ -1,9 +1,12 @@
 #pragma once
 
-#include <string>
 #include <GL/glew.h>
-#include <glm/glm.hpp>
+#include <GLFW/glfw3.h>
+#include <glm/ext.hpp>
+#include <string>
 #include <unordered_map>
+
+#include "GLUtils.hpp"
 
 class ShaderProgram {
    public:

@@ -1,10 +1,3 @@
-#include <GL/glew.h>
-#include <GLFW/glfw3.h>
-//#include <glm/ext.hpp>
-#include <string>
-
-#include "GLUtils.hpp"
-
 #include "ShaderProgram.hpp"
 
 ShaderProgram::ShaderProgram(const std::string &vertex_shader_file, const std::string &fragment_shader_file, const std::string &out_color_name) {
