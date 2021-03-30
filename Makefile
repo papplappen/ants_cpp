@@ -1,4 +1,4 @@
-progname = ant_game_compute_shader_test
+progname = ants_cpp
 
 builddir = build
 srcdir = src
