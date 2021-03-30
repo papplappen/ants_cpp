@@ -3,7 +3,7 @@ progname = ant_game_compute_shader_test
 builddir = build
 srcdir = src
 
-libs = -Llib -lGL -lGLEW -lglfw -lpthread
+libs = -Llib -lGL -lGLEW -lglfw
 
 #imguidir = ${srcdir}/external/imgui
 

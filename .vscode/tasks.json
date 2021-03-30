@@ -4,13 +4,14 @@
 		{
 			"type": "cppbuild",
 			"label": "C/C++: g++.exe build active file",
-			"command": "C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe",
+			"command": "C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe",
 			"args": [
-				"-g",
+				// "-g",
+				"-std=c++11",
 				"-Iinclude",
-				"src\\*.cpp",
 				"-o",
 				"main.exe",
+				"src/*.cpp",
 				"-lglew32",
 				"-lglfw3",
 				"-lopengl32",
@@ -23,7 +24,7 @@
 				"$gcc"
 			],
 			"group": "build",
-			"detail": "compiler: \"C:\\Program Files\\mingw-w64\\x86_64-8.1.0-posix-seh-rt_v6-rev0\\mingw64\\bin\\g++.exe\""
+			"detail": "compiler: \"C:/Program Files/mingw-w64/x86_64-8.1.0-posix-seh-rt_v6-rev0/mingw64/bin/g++.exe\""
 		}
 	]
 }

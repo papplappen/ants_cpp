@@ -41,9 +41,13 @@ void GLAPIENTRY message_callback(GLenum source,
                                  GLsizei length,
                                  const GLchar *message,
                                  const void *user_param) {
-    fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
-            (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
-            type, severity, message);
+    // fprintf(stderr, "GL CALLBACK: %s type = 0x%x, severity = 0x%x, message = %s\n",
+    //         (type == GL_DEBUG_TYPE_ERROR ? "** GL ERROR **" : ""),
+    //         type, severity, message);
+    if (type == GL_DEBUG_TYPE_ERROR) {
+        fprintf(stderr, "GL CALLBACK: type = 0x%x, severity = 0x%x, message = %s\n",
+                type, severity, message);
+    }
 }
 
 void init_glew() {

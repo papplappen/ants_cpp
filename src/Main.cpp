@@ -49,8 +49,9 @@ struct Ant {
 std::vector<Ant> ants;
 
 int main() {
+    std::cout << "BADAMS!" << std::endl;
     //GL SETUP
-    window = init_glfw("蟻");
+    window = init_glfw("ants!");
     init_glew();
 
     gltInit();
