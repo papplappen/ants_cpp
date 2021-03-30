@@ -1,5 +1,8 @@
 #pragma once
 
+#define _USE_MATH_DEFINES
+#include <cmath>
+
 #include <iostream>
 #include <cstdio>
 #include <string>
@@ -78,3 +81,9 @@ void pretty_print(glm::mat3 m);
             std::cout << t.label << ": " << t.t << " (" << int(ratio * 100.0) << "%)" << std::endl;                                      \
         }                                                                                                                                \
     }
+
+double radians(double degrees);
+
+double random();
+double random(double max);
+double random(double min, double max);

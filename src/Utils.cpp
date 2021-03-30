@@ -25,3 +25,16 @@ void pretty_print(glm::mat3 m) {
     }
     printf("└ %*s  %*s  %*s ┘\n", max_len, "", max_len, "", max_len, "");
 }
+
+double radians(double degrees) {
+    return 2 * M_PI * (degrees / 360);
+}
+double random() {
+    return rand() / double(RAND_MAX);
+}
+double random(double max) {
+    return random() * max;
+}
+double random(double min, double max) {
+    return min + random(max - min);
+}
