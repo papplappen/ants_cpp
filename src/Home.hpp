@@ -2,14 +2,14 @@ struct Home;
 #pragma once
 
 #include <forward_list>
+#include <glm/ext.hpp>
 
-#include "Vec.hpp"
+//#include "Vec.hpp"
 #include "Ant.hpp"
 #include "Food.hpp"
 
-struct Home
-{
-    Vec pos;
+struct Home {
+    glm::vec2 pos;
     double food;
     int counter;
 
@@ -22,7 +22,7 @@ struct Home
     const double NEW_ANT_COST = 3;
     const double NEW_ANT_MINIMUM = 20;
 
-    Home(Vec pos_, std::forward_list<Ant> &ants_, std::forward_list<Home> &homes_, std::forward_list<Food> &foods_);
+    Home(glm::vec2 pos_, std::forward_list<Ant> &ants_, std::forward_list<Home> &homes_, std::forward_list<Food> &foods_);
 
     void update();
     void show();

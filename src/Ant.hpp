@@ -3,21 +3,30 @@ struct Ant;
 
 #include <algorithm>
 #include <forward_list>
+#define GLM_ENABLE_EXPERIMENTAL
+#include <glm/ext.hpp>
 
 #include "Utils.hpp"
-#include "Vec.hpp"
+//#include "Vec.hpp"
 #include "Home.hpp"
 #include "Food.hpp"
 
-struct Ant
-{
-    Vec pos;
-    Vec dir;
+struct AntGPUData {
+    glm::vec2 pos;
+    glm::vec2 dir;
+};
 
-    Vec screenSize;
+struct Ant {
+    glm::vec2 pos;
+    glm::vec2 dir;
+
+    glm::vec2 screenSize;
 
     std::forward_list<Home> &homes;
     std::forward_list<Food> &foods;
+
+    std::vector<AntGPUData> &gpuData;
+    int gpuDataIndex;
 
     int counter = 0;
     const double SPEED = 3;
@@ -40,19 +49,19 @@ struct Ant
 
     bool carries_food;
 
-    Ant(Vec pos_, Vec dir_, Vec screenSize_, std::forward_list<Home> &homes_, std::forward_list<Food> &foods_);
+    Ant(glm::vec2 pos_, glm::vec2 dir_, glm::vec2 screenSize_, std::forward_list<Home> &homes_, std::forward_list<Food> &foods_, std::vector<AntGPUData> &gpuData_);
 
     void update();
     void show();
 
-    void wallCollision(Vec screenSize);
+    void wallCollision(glm::vec2 screenSize);
 
     void deliverFood(Home &h);
     void pickupFood(Food &f);
 
     void changeMood(double m);
 
-    bool inViewCone(const Vec &p_rel);
+    bool inViewCone(const glm::vec2 &p_rel);
 
     static bool dead(const Ant &a);
 };
