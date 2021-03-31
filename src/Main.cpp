@@ -1,10 +1,8 @@
 #include "Main.hpp"
 
-#include <iostream>
-#include <vector>
-
 #include <GL/glew.h>
 #include <GLFW/glfw3.h>
+
 #define GLM_ENABLE_EXPERIMENTAL
 #include <glm/ext.hpp>
 
@@ -14,11 +12,16 @@
 
 #define GLT_IMPLEMENTATION
 #include <gltext.h>
+#undef GLT_IMPLEMENTATION
+
+#include <iostream>
+#include <vector>
 
 #include "Utils.hpp"
 #include "GLUtils.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
+// #include "Text.hpp"
 #include "Ant.hpp"
 #include "Food.hpp"
 #include "Home.hpp"
@@ -50,37 +53,14 @@ void showAll() {
 
 int main() {
     std::cout << "BADAMS!" << std::endl;
-    //GL SETUP
-    window = init_glfw("蟻");
-    init_glew();
+    init();
 
-    gltInit();
+    // Text text_fps("", glm::vec3(1.0, 1.0, 1.0));
     GLTtext *text_fps = gltCreateText();
-
-    glClearColor(0.85, 0.75, 0.55, 1.0);
-
-    glfwGetFramebufferSize(window, &viewport_size.x, &viewport_size.y);
-
-    // glEnable(GL_DEPTH_TEST);
-    glEnable(GL_PROGRAM_POINT_SIZE);
-    glEnable(GL_LINE_SMOOTH);
-    glEnable(GL_BLEND);
-    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-
-    glfwSetKeyCallback(window, key_callback);
-    glfwSetCursorPosCallback(window, cursor_callback);
-    glfwSetMouseButtonCallback(window, mouse_button_callback);
 
     for (int i = 0; i < 1000; i++) {
         ants.push_front(Ant(glm::diskRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
     }
-    // ants.push_front(Ant(glm::vec2(100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    // ants.push_front(Ant(glm::vec2(100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    // ants.push_front(Ant(glm::vec2(-100, 100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    // ants.push_front(Ant(glm::vec2(-100, -100), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
-    // for (AntGPUData a : antsGpuData) {
-    //     std::cout << a.pos.x << " | " << a.pos.y << std::endl;
-    // }
 
     GLuint vbo_ants;
     glGenBuffers(1, &vbo_ants);
@@ -91,25 +71,6 @@ int main() {
 
     Texture tex_simplex("res/noise2.png", false, true, false);
     tex_simplex.bindImageTexture(0, true, false);
-
-    // GLuint tex_simplex;
-    // glGenTextures(1, &tex_simplex);
-    // glBindTexture(GL_TEXTURE_2D, tex_simplex);
-    // {
-    //     int width, height, channels;
-    //     unsigned char *img = stbi_load("res/noise.png", &width, &height, &channels, 0);
-    //     glTexImage2D(GL_TEXTURE_2D, 0, GL_RGBA32F, width, height, 0, GL_RGBA, GL_UNSIGNED_BYTE, img);
-    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_CLAMP_TO_BORDER);
-    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_CLAMP_TO_BORDER);
-    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-    //     // glTexParameteri(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
-    //     glGenerateMipmap(GL_TEXTURE_2D);
-
-    //     glBindImageTexture(0, tex_simplex, 0, GL_FALSE, 0, GL_READ_ONLY, GL_RGBA32F);
-
-    //     stbi_image_free(img);
-    // }
-    // glBindTexture(GL_TEXTURE_2D, 0);
 
     ShaderProgram shader_ant("shaders/ant.vert", "shaders/ant.frag");
     shader_ant.point_attribute("pos", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, pos));
@@ -134,13 +95,6 @@ int main() {
     }
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-    // GLuint compshader_test = glCreateProgram();
-    // {
-    //     GLuint compshader_test_obj = compile_shader("shaders/test.comp", GL_COMPUTE_SHADER);
-    //     glAttachShader(compshader_test, compshader_test_obj);
-    //     glLinkProgram(compshader_test);
-    //     check_shader_program_link_status(compshader_test, "Compshader");
-    // }
     ShaderProgram compshader_test("shaders/test.comp");
 
     double start_time = glfwGetTime();
@@ -207,6 +161,8 @@ int main() {
 
         /* --- TEXT --- */
         {
+            // text_fps.setText(std::to_string(int(1 / deltatime)));
+            // text_fps.draw(0, 0, 1.0);
             gltSetText(text_fps, std::to_string(int(1 / deltatime)).c_str());
             gltBeginDraw();
             gltColor(1.0f, 1.0f, 1.0f, 1.0f);
@@ -233,4 +189,25 @@ void cursor_callback(GLFWwindow *window, double xpos, double ypos) {
 }
 
 void mouse_button_callback(GLFWwindow *window, int button, int action, int mods) {
+}
+
+void init() {
+    //GL SETUP
+    window = init_glfw("蟻");
+    init_glew();
+
+    gltInit();
+
+    glfwGetFramebufferSize(window, &viewport_size.x, &viewport_size.y);
+
+    glEnable(GL_PROGRAM_POINT_SIZE);
+    glEnable(GL_LINE_SMOOTH);
+    glEnable(GL_BLEND);
+    glBlendFunc(GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+
+    glClearColor(0.85, 0.75, 0.55, 1.0);
+
+    glfwSetKeyCallback(window, key_callback);
+    glfwSetCursorPosCallback(window, cursor_callback);
+    glfwSetMouseButtonCallback(window, mouse_button_callback);
 }
