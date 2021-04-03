@@ -30,6 +30,7 @@ GLFWwindow *window;
 glm::ivec2 viewport_size;
 
 const float ANT_COMPSHADER_INT_SCALE = 1000.0;
+const float ANT_COMPSHADER_VISION_RADIUS = 20.0;
 
 std::forward_list<Ant> ants;
 std::vector<AntGPUData> antsGpuData;
@@ -59,8 +60,9 @@ int main() {
     // GLTtext *text_fps = gltCreateText();
 
     for (int i = 0; i < 1000; i++) {
-        ants.push_front(Ant(glm::diskRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
+        ants.push_front(Ant(glm::vec2(0.5 * viewport_size.x, 0.5 * viewport_size.y) + glm::diskRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
     }
+    // ants.push_front(Ant(glm::vec2(0.5 * viewport_size.x, 0.5 * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
 
     GLuint vbo_ants;
     glGenBuffers(1, &vbo_ants);
@@ -69,13 +71,14 @@ int main() {
 
     Texture tex_ants("res/ant2.png", true, true, true);
 
-    Texture tex_simplex("res/noise2.png", false, true, false);
+    Texture tex_simplex("res/signal.png", false, true, false);
     tex_simplex.bindImageTexture(0, true, false);
 
     ShaderProgram shader_ant("shaders/ant.vert", "shaders/ant.frag");
     shader_ant.point_attribute("pos", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, pos));
     shader_ant.point_attribute("dir", 2, GL_FLOAT, GL_FALSE, sizeof(AntGPUData), (void *)offsetof(AntGPUData, dir));
-    shader_ant.set_uniformf("trans", glm::mat2(1.0f / (0.5f * viewport_size.x), 0, 0, 1.0f / (0.5f * viewport_size.y)));
+    shader_ant.set_uniformf("transform", glm::mat2(2.0 / viewport_size.x, 0, 0, 2.0 / viewport_size.y));
+    shader_ant.set_uniformf("translate", glm::vec2(-0.5 * viewport_size.x, -0.5 * viewport_size.y));
 
     GLuint ssbo_newdirs;
     glGenBuffers(1, &ssbo_newdirs);
@@ -96,6 +99,10 @@ int main() {
     glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
     ShaderProgram compshader_test("shaders/test.comp");
+
+    ShaderProgram compshader_antvision("shaders/antvision.comp");
+    compshader_antvision.set_uniformf("newdirs_int_scale", ANT_COMPSHADER_INT_SCALE);
+    compshader_antvision.set_uniformf("vision_radius", ANT_COMPSHADER_VISION_RADIUS);
 
     double start_time = glfwGetTime();
     double last_frame_time = start_time;
@@ -129,7 +136,8 @@ int main() {
                 }
                 glBindBuffer(GL_SHADER_STORAGE_BUFFER, 0);
 
-                compshader_test.dispatch(antsGpuData.size(), 1, 1);
+                // compshader_test.dispatch(antsGpuData.size(), 1, 1);
+                compshader_antvision.dispatch(antsGpuData.size(), 1, 1);
 
                 glMemoryBarrier(GL_ALL_BARRIER_BITS);
 
@@ -139,7 +147,7 @@ int main() {
                     for (int i = 0; i < antsGpuData.size(); i++) {
                         glm::vec2 newdir = glm::vec2(newdirs[i]) / ANT_COMPSHADER_INT_SCALE;
                         // std::cout << glm::to_string(newdir) << std::endl;
-                        antsGpuData[i].dir += 0.4 * newdir;
+                        antsGpuData[i].dir += 100.0 * newdir;
                     }
                 }
                 glUnmapBuffer(GL_SHADER_STORAGE_BUFFER);
@@ -193,7 +201,7 @@ void mouse_button_callback(GLFWwindow *window, int button, int action, int mods)
 
 void init() {
     //GL SETUP
-    window = init_glfw("蟻");
+    window = init_glfw("蟻", 1600, 900);
     init_glew();
 
     // gltInit();

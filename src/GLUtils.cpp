@@ -11,7 +11,7 @@
 
 #define PRINT_DEBUG true
 
-GLFWwindow *init_glfw(const std::string &window_name) {
+GLFWwindow *init_glfw(const std::string &window_name, int width, int height) {
     if (!glfwInit()) {
         std::cerr << "Failed to initialize GLFW" << std::endl;
         exit(-1);
@@ -27,7 +27,7 @@ GLFWwindow *init_glfw(const std::string &window_name) {
     glfwWindowHint(GLFW_BLUE_BITS, vidmode->blueBits);
     glfwWindowHint(GLFW_REFRESH_RATE, vidmode->refreshRate);
     // window = glfwCreateWindow(vidmode->width, vidmode->height, "RaytraceGL", monitor, NULL);
-    GLFWwindow *window = glfwCreateWindow(1200, 675, window_name.c_str(), NULL, NULL);
+    GLFWwindow *window = glfwCreateWindow(width, height, window_name.c_str(), NULL, NULL);
 
     glfwMakeContextCurrent(window);
 

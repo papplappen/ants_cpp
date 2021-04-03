@@ -1,0 +1,41 @@
+#version 430
+layout(local_size_x = 8, local_size_y = 8) in;
+
+uniform float newdirs_int_scale;
+uniform float vision_radius;
+
+struct Ant {
+    vec2 pos;
+    vec2 dir;
+};
+
+layout(binding = 0, rgba32f) restrict uniform image2D signal_map;
+
+layout(std430, binding = 3) restrict buffer _ssbo_newdirs {
+    ivec2 newdirs[];
+};
+
+layout(std430, binding = 4) restrict readonly buffer _ssbo_ants {
+    Ant ants[];
+};
+
+void main() {
+    uint index = gl_WorkGroupID.x;
+    Ant ant = ants[index];
+    ivec2 imgSize = imageSize(signal_map);
+
+    vec2 offset_norm = (vec2(gl_LocalInvocationID.xy) - vec2(gl_WorkGroupSize.x / 2, 0)) / vec2(gl_WorkGroupSize.xy - 1);
+
+    vec2 offset = vision_radius * offset_norm;
+
+    vec2 offset_rot = mat2(ant.dir.y, -ant.dir.x, ant.dir.x, ant.dir.y) * offset;
+
+    vec2 sample_pos = ant.pos + offset_rot;
+
+    vec4 signal_sample = imageLoad(signal_map, ivec2(sample_pos));
+
+    vec2 newdir = (signal_sample.g - signal_sample.r) * offset_norm.y * (offset_rot / dot(offset_rot, offset_rot));
+
+    atomicAdd(newdirs[index].x, int(newdirs_int_scale * newdir.x));
+    atomicAdd(newdirs[index].y, int(newdirs_int_scale * newdir.y));
+}

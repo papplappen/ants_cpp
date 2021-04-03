@@ -5,7 +5,7 @@
 #include <glm/ext.hpp>
 #include <string>
 
-GLFWwindow *init_glfw(const std::string &window_name);
+GLFWwindow *init_glfw(const std::string &window_name, int width, int height);
 void init_glew();
 bool check_shader_compile_status(GLuint shader, std::string name = "");
 bool check_shader_program_link_status(GLuint program, std::string name = "");
