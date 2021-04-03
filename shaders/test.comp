@@ -8,7 +8,7 @@ struct Ant {
     vec2 dir;
 };
 
-uniform layout(binding = 0, rgba32f) image2D signal_map;
+restrict uniform layout(binding = 0, rgba32f) image2D signal_map;
 
 restrict layout(std430, binding = 3) buffer _ssbo_newdirs {
     ivec2 newdirs[];

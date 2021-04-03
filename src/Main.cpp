@@ -10,9 +10,9 @@
 #include <stb_image.h>
 #undef STB_IMAGE_IMPLEMENTATION
 
-#define GLT_IMPLEMENTATION
-#include <gltext.h>
-#undef GLT_IMPLEMENTATION
+// #define GLT_IMPLEMENTATION
+// #include <gltext.h>
+// #undef GLT_IMPLEMENTATION
 
 #include <iostream>
 #include <vector>
@@ -21,7 +21,7 @@
 #include "GLUtils.hpp"
 #include "ShaderProgram.hpp"
 #include "Texture.hpp"
-// #include "Text.hpp"
+#include "Text.hpp"
 #include "Ant.hpp"
 #include "Food.hpp"
 #include "Home.hpp"
@@ -55,8 +55,8 @@ int main() {
     std::cout << "BADAMS!" << std::endl;
     init();
 
-    // Text text_fps("", glm::vec3(1.0, 1.0, 1.0));
-    GLTtext *text_fps = gltCreateText();
+    Text text_fps("", glm::vec3(1.0, 1.0, 1.0));
+    // GLTtext *text_fps = gltCreateText();
 
     for (int i = 0; i < 1000; i++) {
         ants.push_front(Ant(glm::diskRand(0.5f * viewport_size.y), glm::circularRand(1.0f), viewport_size, homes, foods, antsGpuData));
@@ -161,13 +161,13 @@ int main() {
 
         /* --- TEXT --- */
         {
-            // text_fps.setText(std::to_string(int(1 / deltatime)));
-            // text_fps.draw(0, 0, 1.0);
-            gltSetText(text_fps, std::to_string(int(1 / deltatime)).c_str());
-            gltBeginDraw();
-            gltColor(1.0f, 1.0f, 1.0f, 1.0f);
-            gltDrawText2D(text_fps, 0, 0, 1.0);
-            gltEndDraw();
+            text_fps.setText(std::to_string(int(1 / deltatime)));
+            text_fps.draw(0, 0, 1.0);
+            // gltSetText(text_fps, std::to_string(int(1 / deltatime)).c_str());
+            // gltBeginDraw();
+            // gltColor(1.0f, 1.0f, 1.0f, 1.0f);
+            // gltDrawText2D(text_fps, 0, 0, 1.0);
+            // gltEndDraw();
         }
 
         glfwSwapBuffers(window);
@@ -196,7 +196,7 @@ void init() {
     window = init_glfw("蟻");
     init_glew();
 
-    gltInit();
+    // gltInit();
 
     glfwGetFramebufferSize(window, &viewport_size.x, &viewport_size.y);
 
